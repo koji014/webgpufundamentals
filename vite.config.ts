@@ -1,7 +1,7 @@
 import { globSync } from 'node:fs';
 import tailwindcss from '@tailwindcss/vite';
-import glsl from 'vite-plugin-glsl';
 import { defineConfig } from 'vite';
+import glsl from 'vite-plugin-glsl';
 
 const input = {
   main: 'index.html',
