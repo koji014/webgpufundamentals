@@ -123,6 +123,8 @@ device.createRenderPipeline({
 
 `layout: 'auto'` はシェーダのコードからデータ配置を WebGPU に推測させる指定。頂点データを渡す場合の `vertex.buffers`、深度テストの `depthStencil`、ブレンドの `blend` などもパイプラインに含められるが、この記事のデモでは使わず後の章で扱う。
 
+> （参考）[PipelineLayoutを理解する](https://zenn.dev/emadurandal/books/cb6818fd3a1b2e/viewer/pipeline-layout)
+
 レンダーパスの descriptor が持つのは描き先まわり:
 
 - 描き込み先テクスチャ（`colorAttachment.view`）
