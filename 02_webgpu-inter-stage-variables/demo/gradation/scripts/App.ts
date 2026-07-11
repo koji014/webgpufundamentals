@@ -8,20 +8,20 @@ export class App {
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
 
-  private constructor(
-    canvas: HTMLCanvasElement,
-    device: GPUDevice,
-    context: GPUCanvasContext,
-    pipeline: GPURenderPipeline,
-    colorAttachment: GPURenderPassColorAttachment,
-    renderPassDescriptor: GPURenderPassDescriptor,
-  ) {
-    this.canvas = canvas;
-    this.device = device;
-    this.context = context;
-    this.pipeline = pipeline;
-    this.colorAttachment = colorAttachment;
-    this.renderPassDescriptor = renderPassDescriptor;
+  private constructor(fields: {
+    canvas: HTMLCanvasElement;
+    device: GPUDevice;
+    context: GPUCanvasContext;
+    pipeline: GPURenderPipeline;
+    colorAttachment: GPURenderPassColorAttachment;
+    renderPassDescriptor: GPURenderPassDescriptor;
+  }) {
+    this.canvas = fields.canvas;
+    this.device = fields.device;
+    this.context = fields.context;
+    this.pipeline = fields.pipeline;
+    this.colorAttachment = fields.colorAttachment;
+    this.renderPassDescriptor = fields.renderPassDescriptor;
   }
 
   static async create(canvas: HTMLCanvasElement): Promise<App> {
@@ -66,14 +66,14 @@ export class App {
       colorAttachments: [colorAttachment],
     };
 
-    return new App(
+    return new App({
       canvas,
       device,
       context,
       pipeline,
       colorAttachment,
       renderPassDescriptor,
-    );
+    });
   }
 
   start() {
@@ -121,9 +121,6 @@ export class App {
 
     device.lost.then((info) => {
       console.error(`WebGPU device was lost: ${info.message}`);
-      if (info.reason !== 'destroyed') {
-        App.getDevice();
-      }
     });
 
     return device;

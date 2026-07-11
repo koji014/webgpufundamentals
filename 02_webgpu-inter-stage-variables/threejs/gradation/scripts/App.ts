@@ -13,16 +13,16 @@ export class App {
   private readonly scene: THREE.Scene;
   private readonly camera: THREE.Camera;
 
-  private constructor(
-    canvas: HTMLCanvasElement,
-    renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene,
-    camera: THREE.Camera,
-  ) {
-    this.canvas = canvas;
-    this.renderer = renderer;
-    this.scene = scene;
-    this.camera = camera;
+  private constructor(fields: {
+    canvas: HTMLCanvasElement;
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+  }) {
+    this.canvas = fields.canvas;
+    this.renderer = fields.renderer;
+    this.scene = fields.scene;
+    this.camera = fields.camera;
   }
 
   static create(canvas: HTMLCanvasElement): App {
@@ -45,7 +45,7 @@ export class App {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    return new App(canvas, renderer, scene, camera);
+    return new App({ canvas, renderer, scene, camera });
   }
 
   start() {

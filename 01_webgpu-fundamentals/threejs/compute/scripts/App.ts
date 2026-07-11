@@ -11,18 +11,18 @@ export class App {
   private readonly camera: THREE.Camera;
   private readonly renderTarget: THREE.WebGLRenderTarget;
 
-  private constructor(
-    output: HTMLElement,
-    renderer: THREE.WebGLRenderer,
-    scene: THREE.Scene,
-    camera: THREE.Camera,
-    renderTarget: THREE.WebGLRenderTarget,
-  ) {
-    this.output = output;
-    this.renderer = renderer;
-    this.scene = scene;
-    this.camera = camera;
-    this.renderTarget = renderTarget;
+  private constructor(fields: {
+    output: HTMLElement;
+    renderer: THREE.WebGLRenderer;
+    scene: THREE.Scene;
+    camera: THREE.Camera;
+    renderTarget: THREE.WebGLRenderTarget;
+  }) {
+    this.output = fields.output;
+    this.renderer = fields.renderer;
+    this.scene = fields.scene;
+    this.camera = fields.camera;
+    this.renderTarget = fields.renderTarget;
   }
 
   static create(output: HTMLElement): App {
@@ -80,7 +80,7 @@ export class App {
     const mesh = new THREE.Mesh(geometry, material);
     scene.add(mesh);
 
-    return new App(output, renderer, scene, camera, renderTarget);
+    return new App({ output, renderer, scene, camera, renderTarget });
   }
 
   // 計算を実行し、結果を画面に表示する

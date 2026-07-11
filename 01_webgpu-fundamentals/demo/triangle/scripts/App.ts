@@ -8,20 +8,20 @@ export class App {
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
 
-  private constructor(
-    canvas: HTMLCanvasElement,
-    device: GPUDevice,
-    context: GPUCanvasContext,
-    pipeline: GPURenderPipeline,
-    colorAttachment: GPURenderPassColorAttachment,
-    renderPassDescriptor: GPURenderPassDescriptor,
-  ) {
-    this.canvas = canvas;
-    this.device = device;
-    this.context = context;
-    this.pipeline = pipeline;
-    this.colorAttachment = colorAttachment;
-    this.renderPassDescriptor = renderPassDescriptor;
+  private constructor(fields: {
+    canvas: HTMLCanvasElement;
+    device: GPUDevice;
+    context: GPUCanvasContext;
+    pipeline: GPURenderPipeline;
+    colorAttachment: GPURenderPassColorAttachment;
+    renderPassDescriptor: GPURenderPassDescriptor;
+  }) {
+    this.canvas = fields.canvas;
+    this.device = fields.device;
+    this.context = fields.context;
+    this.pipeline = fields.pipeline;
+    this.colorAttachment = fields.colorAttachment;
+    this.renderPassDescriptor = fields.renderPassDescriptor;
   }
 
   static async create(canvas: HTMLCanvasElement): Promise<App> {
@@ -80,14 +80,14 @@ export class App {
       ],
     };
 
-    return new App(
+    return new App({
       canvas,
       device,
       context,
       pipeline,
       colorAttachment,
       renderPassDescriptor,
-    );
+    });
   }
 
   // canvas の監視を開始し、初回描画の起点にする
@@ -155,11 +155,6 @@ export class App {
 
     device.lost.then((info) => {
       console.error(`WebGPU device was lost: ${info.message}`);
-      // 'reason' will be 'destroyed' if we intentionally destroy the device.
-      if (info.reason !== 'destroyed') {
-        // try again
-        App.getDevice();
-      }
     });
 
     return device;

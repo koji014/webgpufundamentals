@@ -10,20 +10,20 @@ export class App {
   private readonly resultBuffer: GPUBuffer;
   private readonly bindGroup: GPUBindGroup;
 
-  private constructor(
-    output: HTMLElement,
-    device: GPUDevice,
-    pipeline: GPUComputePipeline,
-    workBuffer: GPUBuffer,
-    resultBuffer: GPUBuffer,
-    bindGroup: GPUBindGroup,
-  ) {
-    this.output = output;
-    this.device = device;
-    this.pipeline = pipeline;
-    this.workBuffer = workBuffer;
-    this.resultBuffer = resultBuffer;
-    this.bindGroup = bindGroup;
+  private constructor(fields: {
+    output: HTMLElement;
+    device: GPUDevice;
+    pipeline: GPUComputePipeline;
+    workBuffer: GPUBuffer;
+    resultBuffer: GPUBuffer;
+    bindGroup: GPUBindGroup;
+  }) {
+    this.output = fields.output;
+    this.device = fields.device;
+    this.pipeline = fields.pipeline;
+    this.workBuffer = fields.workBuffer;
+    this.resultBuffer = fields.resultBuffer;
+    this.bindGroup = fields.bindGroup;
   }
 
   static async create(output: HTMLElement): Promise<App> {
@@ -84,14 +84,14 @@ export class App {
       ],
     });
 
-    return new App(
+    return new App({
       output,
       device,
       pipeline,
       workBuffer,
       resultBuffer,
       bindGroup,
-    );
+    });
   }
 
   // 計算を実行し、結果を画面に表示する
@@ -174,11 +174,6 @@ export class App {
     // デバイスがロストした段階で resolve
     device.lost.then((info) => {
       console.error(`WebGPU device was lost: ${info.message}`);
-      // 'reason' will be 'destroyed' if we intentionally destroy the device.
-      if (info.reason !== 'destroyed') {
-        // try again
-        App.getDevice();
-      }
     });
 
     return device;
