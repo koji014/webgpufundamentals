@@ -15,29 +15,30 @@ export class App {
   private readonly bindGroup: GPUBindGroup;
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
+  private observer?: ResizeObserver;
 
-  private constructor(
-    canvas: HTMLCanvasElement,
-    device: GPUDevice,
-    context: GPUCanvasContext,
-    pipeline: GPURenderPipeline,
-    uniformOffsets: { color: number; scale: number; offset: number },
-    uniformBuffer: GPUBuffer,
-    uniformValues: Float32Array,
-    bindGroup: GPUBindGroup,
-    colorAttachment: GPURenderPassColorAttachment,
-    renderPassDescriptor: GPURenderPassDescriptor,
-  ) {
-    this.canvas = canvas;
-    this.device = device;
-    this.context = context;
-    this.pipeline = pipeline;
-    this.uniformOffsets = uniformOffsets;
-    this.uniformBuffer = uniformBuffer;
-    this.uniformValues = uniformValues;
-    this.bindGroup = bindGroup;
-    this.colorAttachment = colorAttachment;
-    this.renderPassDescriptor = renderPassDescriptor;
+  private constructor(fields: {
+    canvas: HTMLCanvasElement;
+    device: GPUDevice;
+    context: GPUCanvasContext;
+    pipeline: GPURenderPipeline;
+    uniformOffsets: { color: number; scale: number; offset: number };
+    uniformBuffer: GPUBuffer;
+    uniformValues: Float32Array;
+    bindGroup: GPUBindGroup;
+    colorAttachment: GPURenderPassColorAttachment;
+    renderPassDescriptor: GPURenderPassDescriptor;
+  }) {
+    this.canvas = fields.canvas;
+    this.device = fields.device;
+    this.context = fields.context;
+    this.pipeline = fields.pipeline;
+    this.uniformOffsets = fields.uniformOffsets;
+    this.uniformBuffer = fields.uniformBuffer;
+    this.uniformValues = fields.uniformValues;
+    this.bindGroup = fields.bindGroup;
+    this.colorAttachment = fields.colorAttachment;
+    this.renderPassDescriptor = fields.renderPassDescriptor;
   }
 
   static async create(canvas: HTMLCanvasElement): Promise<App> {
@@ -111,7 +112,7 @@ export class App {
       colorAttachments: [colorAttachment],
     };
 
-    return new App(
+    const app = new App({
       canvas,
       device,
       context,
@@ -122,22 +123,34 @@ export class App {
       bindGroup,
       colorAttachment,
       renderPassDescriptor,
-    );
+    });
+
+    device.lost.then(async (info) => {
+      console.error(`WebGPU device was lost: ${info.message}`);
+      if (info.reason !== 'destroyed') {
+        app.dispose();
+        const next = await App.create(canvas);
+        next.start();
+      }
+    });
+
+    return app;
   }
 
   start() {
-    const observer = new ResizeObserver((entries) => this.resize(entries));
-    observer.observe(this.canvas);
+    this.observer = new ResizeObserver((entries) => this.resize(entries));
+    this.observer.observe(this.canvas);
+  }
+
+  dispose() {
+    this.observer?.disconnect();
+    this.observer = undefined;
   }
 
   private render() {
     const aspect = this.canvas.width / this.canvas.height;
     this.uniformValues.set([0.5 / aspect, 0.5], this.uniformOffsets.scale); // set the scale
-    this.device.queue.writeBuffer(
-      this.uniformBuffer,
-      0,
-      this.uniformValues.buffer,
-    );
+    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformValues);
 
     const currentTexture = this.context.getCurrentTexture();
     this.colorAttachment.view = currentTexture.createView();
@@ -173,13 +186,6 @@ export class App {
     if (!device) {
       throw new Error('WebGPU対応ブラウザが必要です');
     }
-
-    device.lost.then((info) => {
-      console.error(`WebGPU device was lost: ${info.message}`);
-      if (info.reason !== 'destroyed') {
-        App.getDevice();
-      }
-    });
 
     return device;
   }
