@@ -7,7 +7,7 @@ interface UniformOffsets {
 interface ObjectInfo {
   scale: number;
   uniformBuffer: GPUBuffer;
-  uniformValues: Float32Array;
+  uniformValues: Float32Array<ArrayBuffer>;
   bindGroup: GPUBindGroup;
 }
 

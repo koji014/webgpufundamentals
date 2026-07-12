@@ -13,7 +13,7 @@ export class App {
   private readonly pipeline: GPURenderPipeline;
   private readonly uniformOffsets: UniformOffsets;
   private readonly uniformBuffer: GPUBuffer;
-  private readonly uniformValues: Float32Array;
+  private readonly uniformValues: Float32Array<ArrayBuffer>;
   private readonly bindGroup: GPUBindGroup;
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
@@ -26,7 +26,7 @@ export class App {
     pipeline: GPURenderPipeline;
     uniformOffsets: UniformOffsets;
     uniformBuffer: GPUBuffer;
-    uniformValues: Float32Array;
+    uniformValues: Float32Array<ArrayBuffer>;
     bindGroup: GPUBindGroup;
     colorAttachment: GPURenderPassColorAttachment;
     renderPassDescriptor: GPURenderPassDescriptor;
