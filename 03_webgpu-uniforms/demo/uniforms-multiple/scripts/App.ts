@@ -6,15 +6,20 @@ interface UniformOffsets {
   offset: number;
 }
 
+interface ObjectInfo {
+  scale: number;
+  uniformBuffer: GPUBuffer;
+  uniformValues: Float32Array;
+  bindGroup: GPUBindGroup;
+}
+
 export class App {
   private readonly canvas: HTMLCanvasElement;
   private readonly device: GPUDevice;
   private readonly context: GPUCanvasContext;
   private readonly pipeline: GPURenderPipeline;
   private readonly uniformOffsets: UniformOffsets;
-  private readonly uniformBuffer: GPUBuffer;
-  private readonly uniformValues: Float32Array;
-  private readonly bindGroup: GPUBindGroup;
+  private readonly objectInfos: ObjectInfo[];
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
   private observer?: ResizeObserver;
@@ -25,9 +30,7 @@ export class App {
     context: GPUCanvasContext;
     pipeline: GPURenderPipeline;
     uniformOffsets: UniformOffsets;
-    uniformBuffer: GPUBuffer;
-    uniformValues: Float32Array;
-    bindGroup: GPUBindGroup;
+    objectInfos: ObjectInfo[];
     colorAttachment: GPURenderPassColorAttachment;
     renderPassDescriptor: GPURenderPassDescriptor;
   }) {
@@ -36,9 +39,7 @@ export class App {
     this.context = fields.context;
     this.pipeline = fields.pipeline;
     this.uniformOffsets = fields.uniformOffsets;
-    this.uniformBuffer = fields.uniformBuffer;
-    this.uniformValues = fields.uniformValues;
-    this.bindGroup = fields.bindGroup;
+    this.objectInfos = fields.objectInfos;
     this.colorAttachment = fields.colorAttachment;
     this.renderPassDescriptor = fields.renderPassDescriptor;
   }
@@ -77,30 +78,47 @@ export class App {
       2 * 4 + // scale is 2 32bit floats (4bytes each): vec2f
       2 * 4; // offset is 2 32bit floats (4bytes each): vec2f
 
-    // GPU 側のメモリ
-    const uniformBuffer = device.createBuffer({
-      label: 'uniforms for triangle',
-      size: uniformBufferSize,
-      usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-    });
-
-    // CPU 側のメモリ
-    const uniformValues = new Float32Array(uniformBufferSize / 4); // 要素数: uniformBufferSize / 4
-
     const uniformOffsets = {
       color: 0,
       scale: 4,
       offset: 6,
     };
 
-    uniformValues.set([0, 1, 0, 1], uniformOffsets.color); // set the color
-    uniformValues.set([-0.5, -0.25], uniformOffsets.offset); // set the offset
+    const numObjects = 100;
+    const objectInfos = [];
 
-    const bindGroup = device.createBindGroup({
-      label: 'triangle bind group',
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [{ binding: 0, resource: uniformBuffer }],
-    });
+    for (let i = 0; i < numObjects; i++) {
+      // GPU 側のメモリ
+      const uniformBuffer = device.createBuffer({
+        label: `uniforms for obj: ${i}`,
+        size: uniformBufferSize,
+        usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+      });
+
+      // CPU 側のメモリ
+      const uniformValues = new Float32Array(uniformBufferSize / 4); // 要素数: uniformBufferSize / 4
+      uniformValues.set(
+        [App.rand(), App.rand(), App.rand(), 1],
+        uniformOffsets.color,
+      ); // set the color
+      uniformValues.set(
+        [App.rand(-0.9, 0.9), App.rand(-0.9, 0.9)],
+        uniformOffsets.offset,
+      ); // set the offset
+
+      const bindGroup = device.createBindGroup({
+        label: `bind group for obj: ${i}`,
+        layout: pipeline.getBindGroupLayout(0),
+        entries: [{ binding: 0, resource: uniformBuffer }],
+      });
+
+      objectInfos.push({
+        scale: App.rand(0.2, 0.5),
+        uniformBuffer,
+        uniformValues,
+        bindGroup,
+      });
+    }
 
     const colorAttachment: GPURenderPassColorAttachment = {
       view: undefined as unknown as GPUTextureView,
@@ -120,9 +138,7 @@ export class App {
       context,
       pipeline,
       uniformOffsets,
-      uniformBuffer,
-      uniformValues,
-      bindGroup,
+      objectInfos,
       colorAttachment,
       renderPassDescriptor,
     });
@@ -150,23 +166,30 @@ export class App {
   }
 
   private render() {
-    const aspect = this.canvas.width / this.canvas.height;
-    this.uniformValues.set([0.5 / aspect, 0.5], this.uniformOffsets.scale); // set the scale
-    this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformValues);
+    // const aspect = this.canvas.width / this.canvas.height;
+    // this.uniformValues.set([0.5 / aspect, 0.5], this.uniformOffsets.scale); // set the scale
+    // this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformValues);
 
     const currentTexture = this.context.getCurrentTexture();
     this.colorAttachment.view = currentTexture.createView();
 
     const encoder = this.device.createCommandEncoder();
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
-
     pass.setPipeline(this.pipeline);
-    pass.setBindGroup(0, this.bindGroup);
-    pass.draw(3);
+
+    const aspect = this.canvas.width / this.canvas.height;
+
+    for (const { scale, bindGroup, uniformBuffer, uniformValues } of this
+      .objectInfos) {
+      uniformValues.set([scale / aspect, scale], this.uniformOffsets.scale);
+      this.device.queue.writeBuffer(uniformBuffer, 0, uniformValues);
+      pass.setBindGroup(0, bindGroup);
+      pass.draw(3);
+    }
+
     pass.end();
 
     const commandBuffer = encoder.finish();
-
     this.device.queue.submit([commandBuffer]);
   }
 
@@ -191,4 +214,15 @@ export class App {
 
     return device;
   }
+
+  private static rand = (min?: number, max?: number) => {
+    if (min === undefined) {
+      min = 0;
+      max = 1;
+    } else if (max === undefined) {
+      max = min;
+      min = 0;
+    }
+    return min + Math.random() * (max - min);
+  };
 }
