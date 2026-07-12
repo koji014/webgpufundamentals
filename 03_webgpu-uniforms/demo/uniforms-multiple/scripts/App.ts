@@ -166,10 +166,6 @@ export class App {
   }
 
   private render() {
-    // const aspect = this.canvas.width / this.canvas.height;
-    // this.uniformValues.set([0.5 / aspect, 0.5], this.uniformOffsets.scale); // set the scale
-    // this.device.queue.writeBuffer(this.uniformBuffer, 0, this.uniformValues);
-
     const currentTexture = this.context.getCurrentTexture();
     this.colorAttachment.view = currentTexture.createView();
 
