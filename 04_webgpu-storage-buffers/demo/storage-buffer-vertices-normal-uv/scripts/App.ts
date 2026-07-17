@@ -69,7 +69,7 @@ export class App {
     context.configure({ device, format: presentationFormat });
 
     const shaderModule = device.createShaderModule({
-      label: 'our hardcoded rgb triangle shaders',
+      label: 'storage buffer vertices with normal/uv',
       code: triangle_wgsl,
     });
 
@@ -287,15 +287,34 @@ export class App {
     startAngle = 0,
     endAngle = Math.PI * 2,
   } = {}) => {
-    // 1つのサブディビジョンあたり2つの三角形、1つの三角形あたり3つの頂点、それぞれ2つの値（xy）。
+    // 1つのサブディビジョンあたり2つの三角形、1つの三角形あたり3つの頂点。
     const numVertices = numSubdivisions * 2 * 3;
-    const vertexData = new Float32Array(numSubdivisions * 2 * 3 * 2);
+    // 1 頂点 = 12 個の f32（= 48 バイト。うち position/normal/uv の実データは 7 個、残り 5 個はパディング）。
+    const vertexData = new Float32Array(numSubdivisions * 2 * 3 * 12);
 
     let offset = 0;
-    const addVertex = (x: number, y: number) => {
-      vertexData[offset++] = x;
-      vertexData[offset++] = y;
+    const addVertex = (
+      x: number,
+      y: number,
+      nx: number,
+      ny: number,
+      nz: number,
+      u: number,
+      v: number,
+    ) => {
+      vertexData[offset++] = x; // position.x   (byte 0)
+      vertexData[offset++] = y; // position.y   (byte 4)
+      offset += 2; //             パディング     (byte 8-15)
+      vertexData[offset++] = nx; // normal.x     (byte 16)
+      vertexData[offset++] = ny; // normal.y     (byte 20)
+      vertexData[offset++] = nz; // normal.z     (byte 24)
+      offset += 1; //             パディング     (byte 28-31)
+      vertexData[offset++] = u; //  uv.x         (byte 32)
+      vertexData[offset++] = v; //  uv.y         (byte 36)
+      offset += 2; //             末尾パディング (byte 40-47)
     };
+
+    const nz = 0.5;
 
     // 1つのサブディビジョンあたり2つの三角形
     //
@@ -314,15 +333,20 @@ export class App {
       const c2 = Math.cos(angle2);
       const s2 = Math.sin(angle2);
 
+      // uv.x は角度（一周で 0→1）、uv.y は外周=1 / 内周=0。
+      const u1 = i / numSubdivisions;
+      const u2 = (i + 1) / numSubdivisions;
+
+      // 外周は外向き (c, s)、内周は内向き (-c, -s) の法線
       // 最初の三角形
-      addVertex(c1 * radius, s1 * radius);
-      addVertex(c2 * radius, s2 * radius);
-      addVertex(c1 * innerRadius, s1 * innerRadius);
+      addVertex(c1 * radius, s1 * radius, c1, s1, nz, u1, 1);
+      addVertex(c2 * radius, s2 * radius, c2, s2, nz, u2, 1);
+      addVertex(c1 * innerRadius, s1 * innerRadius, -c1, -s1, nz, u1, 0);
 
       // 2番目の三角形
-      addVertex(c1 * innerRadius, s1 * innerRadius);
-      addVertex(c2 * radius, s2 * radius);
-      addVertex(c2 * innerRadius, s2 * innerRadius);
+      addVertex(c1 * innerRadius, s1 * innerRadius, -c1, -s1, nz, u1, 0);
+      addVertex(c2 * radius, s2 * radius, c2, s2, nz, u2, 1);
+      addVertex(c2 * innerRadius, s2 * innerRadius, -c2, -s2, nz, u2, 0);
     }
 
     return {
