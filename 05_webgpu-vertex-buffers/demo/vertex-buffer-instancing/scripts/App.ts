@@ -13,12 +13,12 @@ export class App {
   private readonly device: GPUDevice;
   private readonly context: GPUCanvasContext;
   private readonly pipeline: GPURenderPipeline;
-  private readonly changingStorageBuffer: GPUBuffer;
-  private readonly storageValues: Float32Array<ArrayBuffer>;
   private readonly changingUnitSize: number;
   private readonly changingOffsets: ChangingStorageOffsets;
-  private readonly bindGroup: GPUBindGroup;
   private readonly vertexBuffer: GPUBuffer;
+  private readonly staticVertexBuffer: GPUBuffer;
+  private readonly changingVertexBuffer: GPUBuffer;
+  private readonly vertexValues: Float32Array<ArrayBuffer>;
   private readonly numObjects: number;
   private readonly numVertices: number;
   private readonly objectInfos: ObjectInfo[];
@@ -31,12 +31,12 @@ export class App {
     device: GPUDevice;
     context: GPUCanvasContext;
     pipeline: GPURenderPipeline;
-    changingStorageBuffer: GPUBuffer;
-    storageValues: Float32Array<ArrayBuffer>;
     changingUnitSize: number;
     changingOffsets: ChangingStorageOffsets;
-    bindGroup: GPUBindGroup;
     vertexBuffer: GPUBuffer;
+    staticVertexBuffer: GPUBuffer;
+    changingVertexBuffer: GPUBuffer;
+    vertexValues: Float32Array<ArrayBuffer>;
     numObjects: number;
     numVertices: number;
     objectInfos: ObjectInfo[];
@@ -47,12 +47,12 @@ export class App {
     this.device = fields.device;
     this.context = fields.context;
     this.pipeline = fields.pipeline;
-    this.changingStorageBuffer = fields.changingStorageBuffer;
-    this.storageValues = fields.storageValues;
     this.changingUnitSize = fields.changingUnitSize;
     this.changingOffsets = fields.changingOffsets;
-    this.bindGroup = fields.bindGroup;
     this.vertexBuffer = fields.vertexBuffer;
+    this.staticVertexBuffer = fields.staticVertexBuffer;
+    this.changingVertexBuffer = fields.changingVertexBuffer;
+    this.vertexValues = fields.vertexValues;
     this.numObjects = fields.numObjects;
     this.numVertices = fields.numVertices;
     this.objectInfos = fields.objectInfos;
@@ -88,6 +88,21 @@ export class App {
               { shaderLocation: 0, offset: 0, format: 'float32x2' }, // position
             ],
           },
+          {
+            arrayStride: 6 * 4, // 6 floats, 4 bytes each
+            stepMode: 'instance',
+            attributes: [
+              { shaderLocation: 1, offset: 0, format: 'float32x4' }, // color
+              { shaderLocation: 2, offset: 16, format: 'float32x2' }, // offset
+            ],
+          },
+          {
+            arrayStride: 2 * 4, // 2 floats, 4 bytes each
+            stepMode: 'instance',
+            attributes: [
+              { shaderLocation: 3, offset: 0, format: 'float32x2' }, // scale
+            ],
+          },
         ],
       },
       fragment: {
@@ -101,13 +116,12 @@ export class App {
 
     // uniforms のためのバッファを作成する
     const staticUnitSize =
-      4 * 4 + // color is 4 32bit floats (4bytes each): vec4f
-      2 * 4 + // offset is 2 32bit floats (4bytes each): vec2f
-      2 * 4; // padding
-    const changingUnitSize = 2 * 4; // scale is 2 32bit floats (4bytes each): vec2f
+      4 * 4 + // color is 4 32bit floats (4bytes each)
+      2 * 4; // offset is 2 32bit floats (4bytes each)
+    const changingUnitSize = 2 * 4; // scale is 2 32bit floats (4bytes each)
 
-    const staticStorageBufferSize = staticUnitSize * numObjects;
-    const changingStorageBufferSize = changingUnitSize * numObjects;
+    const staticVertexBufferSize = staticUnitSize * numObjects;
+    const changingVertexBufferSize = changingUnitSize * numObjects;
 
     const staticStorageBufferOffsets = {
       color: 0,
@@ -118,28 +132,30 @@ export class App {
       scale: 0,
     };
 
-    const staticStorageBuffer = device.createBuffer({
-      label: 'static storage for objects',
-      size: staticStorageBufferSize,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    const staticVertexBuffer = device.createBuffer({
+      label: 'static vertex for objects',
+      size: staticVertexBufferSize,
+
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
-    const changingStorageBuffer = device.createBuffer({
-      label: 'changing storage for objects',
-      size: changingStorageBufferSize,
-      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
+    const changingVertexBuffer = device.createBuffer({
+      label: 'changing vertex for objects',
+      size: changingVertexBufferSize,
+
+      usage: GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST,
     });
 
     {
-      const staticStorageValues = new Float32Array(staticStorageBufferSize / 4);
+      const staticVertexValues = new Float32Array(staticVertexBufferSize / 4);
       for (let i = 0; i < numObjects; i++) {
         const staticOffset = i * (staticUnitSize / 4);
 
-        staticStorageValues.set(
+        staticVertexValues.set(
           [App.rand(), App.rand(), App.rand(), 1],
           staticOffset + staticStorageBufferOffsets.color,
         );
-        staticStorageValues.set(
+        staticVertexValues.set(
           [App.rand(-0.9, 0.9), App.rand(-0.9, 0.9)],
           staticOffset + staticStorageBufferOffsets.offset,
         );
@@ -148,19 +164,10 @@ export class App {
           scale: App.rand(0.2, 0.5),
         });
       }
-      device.queue.writeBuffer(staticStorageBuffer, 0, staticStorageValues);
+      device.queue.writeBuffer(staticVertexBuffer, 0, staticVertexValues);
     }
 
-    const storageValues = new Float32Array(changingStorageBufferSize / 4);
-
-    const bindGroup = device.createBindGroup({
-      label: 'bind group for objects',
-      layout: pipeline.getBindGroupLayout(0),
-      entries: [
-        { binding: 0, resource: staticStorageBuffer },
-        { binding: 1, resource: changingStorageBuffer },
-      ],
-    });
+    const vertexValues = new Float32Array(changingVertexBufferSize / 4);
 
     const { vertexData, numVertices } = App.createCircleVertices({
       radius: 0.5,
@@ -191,12 +198,12 @@ export class App {
       device,
       context,
       pipeline,
-      changingStorageBuffer,
-      storageValues,
       changingUnitSize,
       changingOffsets,
-      bindGroup,
       vertexBuffer,
+      staticVertexBuffer,
+      changingVertexBuffer,
+      vertexValues,
       numObjects,
       numVertices,
       objectInfos,
@@ -234,23 +241,24 @@ export class App {
     const pass = encoder.beginRenderPass(this.renderPassDescriptor);
     pass.setPipeline(this.pipeline);
     pass.setVertexBuffer(0, this.vertexBuffer);
+    pass.setVertexBuffer(1, this.staticVertexBuffer);
+    pass.setVertexBuffer(2, this.changingVertexBuffer);
 
     const aspect = this.canvas.width / this.canvas.height;
 
     this.objectInfos.forEach(({ scale }, ndx) => {
       const offset = ndx * (this.changingUnitSize / 4);
-      this.storageValues.set(
+      this.vertexValues.set(
         [scale / aspect, scale],
         offset + this.changingOffsets.scale,
       );
     });
     this.device.queue.writeBuffer(
-      this.changingStorageBuffer,
+      this.changingVertexBuffer,
       0,
-      this.storageValues,
+      this.vertexValues,
     );
 
-    pass.setBindGroup(0, this.bindGroup);
     pass.draw(this.numVertices, this.numObjects);
 
     pass.end();
