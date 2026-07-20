@@ -1,4 +1,4 @@
-import triangle_wgsl from '../shaders/index.wgsl';
+import index_wgsl from '../shaders/index.wgsl';
 
 interface ChangingStorageOffsets {
   scale: number;
@@ -70,7 +70,7 @@ export class App {
 
     const shaderModule = device.createShaderModule({
       label: 'storage buffer vertices with normal/uv',
-      code: triangle_wgsl,
+      code: index_wgsl,
     });
 
     const pipeline = device.createRenderPipeline({
