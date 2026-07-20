@@ -85,18 +85,18 @@ export class App {
         module: shaderModule,
         buffers: [
           {
-            arrayStride: 5 * 4, // 5 floats, 4 bytes each
+            arrayStride: 2 * 4 + 4, // 2 floats, 4 bytes each + 4 bytes
             attributes: [
               { shaderLocation: 0, offset: 0, format: 'float32x2' }, // position
-              { shaderLocation: 4, offset: 8, format: 'float32x3' }, // perVertexColor
+              { shaderLocation: 4, offset: 8, format: 'unorm8x4' }, // perVertexColor
             ],
           },
           {
-            arrayStride: 6 * 4, // 6 floats, 4 bytes each
+            arrayStride: 4 + 2 * 4, // 4 bytes + 2 floats, 4 bytes each
             stepMode: 'instance',
             attributes: [
-              { shaderLocation: 1, offset: 0, format: 'float32x4' }, // color
-              { shaderLocation: 2, offset: 16, format: 'float32x2' }, // offset
+              { shaderLocation: 1, offset: 0, format: 'unorm8x4' }, // color
+              { shaderLocation: 2, offset: 4, format: 'float32x2' }, // offset
             ],
           },
           {
@@ -119,7 +119,7 @@ export class App {
 
     // uniforms のためのバッファを作成する
     const staticUnitSize =
-      4 * 4 + // color is 4 32bit floats (4bytes each)
+      4 + // color is 4 bytes
       2 * 4; // offset is 2 32bit floats (4bytes each)
     const changingUnitSize = 2 * 4; // scale is 2 32bit floats (4bytes each)
 
@@ -128,7 +128,7 @@ export class App {
 
     const staticOffsets = {
       color: 0,
-      offset: 4,
+      offset: 1,
     };
 
     const changingOffsets = {
@@ -150,24 +150,28 @@ export class App {
     });
 
     {
-      const staticVertexValues = new Float32Array(staticVertexBufferSize / 4);
+      const staticVertexValuesU8 = new Uint8Array(staticVertexBufferSize);
+      const staticVertexValuesF32 = new Float32Array(
+        staticVertexValuesU8.buffer,
+      );
       for (let i = 0; i < numObjects; i++) {
-        const staticOffset = i * (staticUnitSize / 4);
+        const staticOffsetU8 = i * staticUnitSize;
+        const staticOffsetF32 = staticOffsetU8 / 4;
 
-        staticVertexValues.set(
-          [App.rand(), App.rand(), App.rand(), 1],
-          staticOffset + staticOffsets.color,
+        staticVertexValuesU8.set(
+          [App.rand() * 255, App.rand() * 255, App.rand() * 255, 255],
+          staticOffsetU8 + staticOffsets.color,
         );
-        staticVertexValues.set(
+        staticVertexValuesF32.set(
           [App.rand(-0.9, 0.9), App.rand(-0.9, 0.9)],
-          staticOffset + staticOffsets.offset,
+          staticOffsetF32 + staticOffsets.offset,
         );
 
         objectInfos.push({
           scale: App.rand(0.2, 0.5),
         });
       }
-      device.queue.writeBuffer(staticVertexBuffer, 0, staticVertexValues);
+      device.queue.writeBuffer(staticVertexBuffer, 0, staticVertexValuesF32);
     }
 
     const vertexValues = new Float32Array(changingVertexBufferSize / 4);
@@ -312,9 +316,14 @@ export class App {
   } = {}) => {
     // 1つのサブディビジョンあたり2つの三角形、1つの三角形あたり3つの頂点、それぞれ5つの値（xy,rgb）。
     const numVertices = numSubdivisions * 2 * 3;
-    const vertexData = new Float32Array(numVertices * (2 + 3));
+
+    // 位置（xy）に2つの32ビット値、色（rgb_）に1つの32ビット値
+    // 32ビットの色値は、4つの8ビット値として書き込み/読み取りされる
+    const vertexData = new Float32Array(numVertices * (2 + 1));
+    const colorData = new Uint8Array(vertexData.buffer);
 
     let offset = 0;
+    let colorOffset = 8;
     const addVertex = (
       x: number,
       y: number,
@@ -324,9 +333,11 @@ export class App {
     ) => {
       vertexData[offset++] = x;
       vertexData[offset++] = y;
-      vertexData[offset++] = r;
-      vertexData[offset++] = g;
-      vertexData[offset++] = b;
+      offset += 1; // 色をスキップ
+      colorData[colorOffset++] = r * 255;
+      colorData[colorOffset++] = g * 255;
+      colorData[colorOffset++] = b * 255;
+      colorOffset += 9; // 余分なバイトと位置をスキップ
     };
 
     const innerColor: RGB = [1, 1, 1];

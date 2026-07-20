@@ -1,6 +1,6 @@
 import index_wgsl from '../shaders/index.wgsl';
 
-interface ChangingStorageOffsets {
+interface ChangingOffsets {
   scale: number;
 }
 
@@ -14,7 +14,7 @@ export class App {
   private readonly context: GPUCanvasContext;
   private readonly pipeline: GPURenderPipeline;
   private readonly changingUnitSize: number;
-  private readonly changingOffsets: ChangingStorageOffsets;
+  private readonly changingOffsets: ChangingOffsets;
   private readonly vertexBuffer: GPUBuffer;
   private readonly staticVertexBuffer: GPUBuffer;
   private readonly changingVertexBuffer: GPUBuffer;
@@ -32,7 +32,7 @@ export class App {
     context: GPUCanvasContext;
     pipeline: GPURenderPipeline;
     changingUnitSize: number;
-    changingOffsets: ChangingStorageOffsets;
+    changingOffsets: ChangingOffsets;
     vertexBuffer: GPUBuffer;
     staticVertexBuffer: GPUBuffer;
     changingVertexBuffer: GPUBuffer;
@@ -123,7 +123,7 @@ export class App {
     const staticVertexBufferSize = staticUnitSize * numObjects;
     const changingVertexBufferSize = changingUnitSize * numObjects;
 
-    const staticStorageBufferOffsets = {
+    const staticOffsets = {
       color: 0,
       offset: 4,
     };
@@ -153,11 +153,11 @@ export class App {
 
         staticVertexValues.set(
           [App.rand(), App.rand(), App.rand(), 1],
-          staticOffset + staticStorageBufferOffsets.color,
+          staticOffset + staticOffsets.color,
         );
         staticVertexValues.set(
           [App.rand(-0.9, 0.9), App.rand(-0.9, 0.9)],
-          staticOffset + staticStorageBufferOffsets.offset,
+          staticOffset + staticOffsets.offset,
         );
 
         objectInfos.push({
