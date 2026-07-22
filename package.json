@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "muigui": "^0.0.27",
-    "three": "^0.180.0"
+    "three": "^0.180.0",
+    "wgpu-matrix": "^3.4.2"
   }
 }
