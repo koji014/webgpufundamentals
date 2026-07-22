@@ -23,6 +23,7 @@
     "vite-plugin-glsl": "^1.6.0"
   },
   "dependencies": {
+    "muigui": "^0.0.27",
     "three": "^0.180.0"
   }
 }
