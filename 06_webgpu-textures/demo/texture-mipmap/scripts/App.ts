@@ -6,6 +6,20 @@ interface UniformOffsets {
   offset: number;
 }
 
+interface Mip {
+  data: Uint8Array<ArrayBuffer>;
+  width: number;
+  height: number;
+}
+
+interface Settings {
+  addressModeU: GPUAddressMode;
+  addressModeV: GPUAddressMode;
+  magFilter: GPUFilterMode;
+  minFilter: GPUFilterMode;
+  scale: number;
+}
+
 export class App {
   private readonly canvas: HTMLCanvasElement;
   private readonly device: GPUDevice;
@@ -15,7 +29,7 @@ export class App {
   private readonly uniformOffsets: UniformOffsets;
   private readonly uniformBuffer: GPUBuffer;
   private readonly uniformValues: Float32Array<ArrayBuffer>;
-  private readonly settings: GPUSamplerDescriptor;
+  private readonly settings: Settings;
   private readonly colorAttachment: GPURenderPassColorAttachment;
   private readonly renderPassDescriptor: GPURenderPassDescriptor;
   private observer?: ResizeObserver;
@@ -30,7 +44,7 @@ export class App {
     uniformOffsets: UniformOffsets;
     uniformBuffer: GPUBuffer;
     uniformValues: Float32Array<ArrayBuffer>;
-    settings: GPUSamplerDescriptor;
+    settings: Settings;
     colorAttachment: GPURenderPassColorAttachment;
     renderPassDescriptor: GPURenderPassDescriptor;
   }) {
@@ -78,7 +92,6 @@ export class App {
     });
 
     const textureWidth = 5;
-    const textureHeight = 7;
 
     const _ = [255, 0, 0, 255]; // red
     const y = [255, 255, 0, 255]; // yellow
@@ -94,18 +107,23 @@ export class App {
       b, _, _, _, _,
     ].flat());
 
+    const mips = App.generateMips(textureData, textureWidth);
+
     const texture = device.createTexture({
       label: 'yellow F on red',
-      size: [textureWidth, textureHeight],
+      size: [mips[0].width, mips[0].height],
+      mipLevelCount: mips.length,
       format: 'rgba8unorm',
       usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST,
     });
-    device.queue.writeTexture(
-      { texture },
-      textureData,
-      { bytesPerRow: textureWidth * 4 },
-      { width: textureWidth, height: textureHeight },
-    );
+    mips.forEach(({ data, width, height }, mipLevel) => {
+      device.queue.writeTexture(
+        { texture, mipLevel },
+        data,
+        { bytesPerRow: width * 4 },
+        { width, height },
+      );
+    });
 
     const uniformBufferSize =
       2 * 4 + // scale is 2 32bit floats (4bytes each)
@@ -146,11 +164,12 @@ export class App {
       bindGroups.push(bindGroup);
     }
 
-    const settings: GPUSamplerDescriptor = {
+    const settings: Settings = {
       addressModeU: 'repeat',
       addressModeV: 'repeat',
       magFilter: 'linear',
       minFilter: 'linear',
+      scale: 1,
     };
 
     const colorAttachment: GPURenderPassColorAttachment = {
@@ -192,6 +211,7 @@ export class App {
     gui.add(settings, 'addressModeV', addressOptions);
     gui.add(settings, 'magFilter', filterOptions);
     gui.add(settings, 'minFilter', filterOptions);
+    gui.add(settings, 'scale', 0.5, 6);
     app.gui = gui;
 
     device.lost.then(async (info) => {
@@ -229,10 +249,8 @@ export class App {
       (this.settings.minFilter === 'linear' ? 8 : 0);
     const bindGroup = this.bindGroups[ndx];
 
-    // 0 から 1 のクリップ空間クワッドを描画するスケールを計算
-    // キャンバスの 2x2 ピクセル
-    const scaleX = 4 / this.canvas.width;
-    const scaleY = 4 / this.canvas.height;
+    const scaleX = (4 / this.canvas.width) * this.settings.scale;
+    const scaleY = (4 / this.canvas.height) * this.settings.scale;
 
     this.uniformValues.set([scaleX, scaleY], this.uniformOffsets.scale);
     this.uniformValues.set(
@@ -279,4 +297,87 @@ export class App {
 
     return device;
   }
+
+  private static lerp = (a: number, b: number, t: number): number =>
+    a + (b - a) * t;
+
+  private static mix = (a: Uint8Array, b: Uint8Array, t: number): Uint8Array =>
+    a.map((v, i) => App.lerp(v, b[i], t));
+
+  private static bilinearFilter(
+    tl: Uint8Array,
+    tr: Uint8Array,
+    bl: Uint8Array,
+    br: Uint8Array,
+    t1: number,
+    t2: number,
+  ): Uint8Array {
+    const t = App.mix(tl, tr, t1);
+    const b = App.mix(bl, br, t1);
+    return App.mix(t, b, t2);
+  }
+
+  private static createNextMipLevelRgba8Unorm({
+    data: src,
+    width: srcWidth,
+    height: srcHeight,
+  }: Mip): Mip {
+    // compute the size of the next mip
+    const dstWidth = Math.max(1, (srcWidth / 2) | 0);
+    const dstHeight = Math.max(1, (srcHeight / 2) | 0);
+    const dst = new Uint8Array(dstWidth * dstHeight * 4);
+
+    const getSrcPixel = (x: number, y: number): Uint8Array => {
+      const offset = (y * srcWidth + x) * 4;
+      return src.subarray(offset, offset + 4);
+    };
+
+    for (let y = 0; y < dstHeight; ++y) {
+      for (let x = 0; x < dstWidth; ++x) {
+        // compute texcoord of the center of the destination texel
+        const u = (x + 0.5) / dstWidth;
+        const v = (y + 0.5) / dstHeight;
+
+        // compute the same texcoord in the source - 0.5 a pixel
+        const au = u * srcWidth - 0.5;
+        const av = v * srcHeight - 0.5;
+
+        // compute the src top left texel coord (not texcoord)
+        const tx = au | 0;
+        const ty = av | 0;
+
+        // compute the mix amounts between pixels
+        const t1 = au % 1;
+        const t2 = av % 1;
+
+        // get the 4 pixels
+        const tl = getSrcPixel(tx, ty);
+        const tr = getSrcPixel(tx + 1, ty);
+        const bl = getSrcPixel(tx, ty + 1);
+        const br = getSrcPixel(tx + 1, ty + 1);
+
+        // copy the "sampled" result into the dest.
+        const dstOffset = (y * dstWidth + x) * 4;
+        dst.set(App.bilinearFilter(tl, tr, bl, br, t1, t2), dstOffset);
+      }
+    }
+    return { data: dst, width: dstWidth, height: dstHeight };
+  }
+
+  private static generateMips = (
+    src: Uint8Array<ArrayBuffer>,
+    srcWidth: number,
+  ): Mip[] => {
+    const srcHeight = src.length / 4 / srcWidth;
+
+    // populate with first mip level (base level)
+    let mip: Mip = { data: src, width: srcWidth, height: srcHeight };
+    const mips = [mip];
+
+    while (mip.width > 1 || mip.height > 1) {
+      mip = App.createNextMipLevelRgba8Unorm(mip);
+      mips.push(mip);
+    }
+    return mips;
+  };
 }
