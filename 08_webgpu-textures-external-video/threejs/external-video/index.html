@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>08 external-video — Three.js — ビデオの効率的な使用</title>
+    <link rel="stylesheet" href="/src/style.css">
+  </head>
+  <body>
+    <a
+      href="/"
+      class="fixed left-2 top-2 z-10 rounded-md bg-black/55 px-2.5 py-1 text-sm text-white no-underline hover:bg-black/70"
+      >← 一覧</a
+    >
+    <canvas id="webgl-canvas" class="fixed inset-0 h-dvh w-full"></canvas>
+    <div
+      id="start"
+      class="fixed inset-0 flex items-center justify-center text-9xl cursor-pointer"
+    >
+      ▶️
+    </div>
+    <script type="module" src="./scripts/index.ts"></script>
+  </body>
+</html>

@@ -1,5 +1,5 @@
 import { mat4 } from 'wgpu-matrix';
-import videoUrl from '../assets/pexels-anna-bondarenko-5534310-540p.mp4';
+import videoUrl from '../../../assets/pexels-anna-bondarenko-5534310-540p.mp4';
 import index_wgsl from '../shaders/index.wgsl';
 
 interface ObjectInfo {

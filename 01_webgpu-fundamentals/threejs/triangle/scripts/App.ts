@@ -34,8 +34,12 @@ export class App {
     const camera = new THREE.Camera();
 
     const geometry = new THREE.BufferGeometry();
-    // gl_VertexID が 0→1→2 と渡り drawElements で 3 頂点が描画される
-    geometry.setIndex([0, 1, 2]);
+    // gl_VertexID が 0→1→2 と渡り 3 頂点が描画される
+    const positions = Array.from({ length: 3 }, () => [0, 0, 0]).flat();
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(positions, 3),
+    );
 
     const material = new THREE.RawShaderMaterial({
       vertexShader: triangle_vert,

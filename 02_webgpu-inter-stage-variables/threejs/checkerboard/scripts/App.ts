@@ -34,7 +34,11 @@ export class App {
     const camera = new THREE.Camera();
 
     const geometry = new THREE.BufferGeometry();
-    geometry.setIndex([0, 1, 2]);
+    const positions = Array.from({ length: 3 }, () => [0, 0, 0]).flat();
+    geometry.setAttribute(
+      'position',
+      new THREE.Float32BufferAttribute(positions, 3),
+    );
 
     const material = new THREE.RawShaderMaterial({
       vertexShader: checkerboard_vert,
