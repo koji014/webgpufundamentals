@@ -7,7 +7,7 @@ https://webgpufundamentals.org/webgpu/lessons/ja/webgpu-vertex-buffers.html
 ## 頂点バッファを用いてデータを送る
 
 ### 01. ストレージバッファとの違い
-- [前章](../04_webgpu-storage-buffers/README.md)では頂点をストレージバッファに入れ、頂点シェーダーが `@builtin(vertex_index)` を添字にして自分で配列から取り出していた
+- [前章](../04_storage-buffers/README.md)では頂点をストレージバッファに入れ、頂点シェーダーが `@builtin(vertex_index)` を添字にして自分で配列から取り出していた
     ```wgsl
     let v = vertices[vertexIndex];
     vsOut.position = vec4f(v.position * otherStruct.scale + ourStruct.offset, 0.0, 1.0);

@@ -8,7 +8,7 @@ https://webgpufundamentals.org/webgpu/lessons/ja/webgpu-textures-external-video.
 
 ### 01. ビデオを使用するための別の方法
 
-- [前章](../07_webgpu-importing-textures/README.md)では `copyExternalImageToTexture` で、ビデオの現在フレームを既存テクスチャに**コピー**していた
+- [前章](../07_importing-textures/README.md)では `copyExternalImageToTexture` で、ビデオの現在フレームを既存テクスチャに**コピー**していた
 - もう一つの方法として `importExternalTexture` がある
 - 戻り値である `GPUExternalTexture` はビデオのデータを直接指すので、コピーが作られない（ゼロコピー）。
 

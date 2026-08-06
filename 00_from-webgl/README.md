@@ -253,7 +253,7 @@ pass.end();
 device.queue.submit([encoder.finish()]);   // ここで実際に動く
 ```
 
-`pass.end()` や `encoder.finish()` の時点では描画は起きず、`submit()` で初めて動く。WebGL の `gl.clear` に相当するのは `renderPassDescriptor` の `loadOp: 'clear'` / `clearValue`。記録→submit の詳細は `01_webgpu-fundamentals` を参照。
+`pass.end()` や `encoder.finish()` の時点では描画は起きず、`submit()` で初めて動く。WebGL の `gl.clear` に相当するのは `renderPassDescriptor` の `loadOp: 'clear'` / `clearValue`。記録→submit の詳細は `01_fundamentals` を参照。
 
 ### 描画呼び出しと topology の対応
 
