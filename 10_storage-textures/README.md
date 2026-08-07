@@ -102,8 +102,12 @@ context.configure({
 });
 ```
 
-- `TEXTURE_BINDING`：ブラウザがキャンバスをページに表示するために必要
-- `STORAGE_BINDING`：キャンバスのテクスチャをストレージテクスチャとして書き込むために必要
+- `STORAGE_BINDING`：コンピュートシェーダーが `textureStore` でキャンバスのテクスチャに直接書き込むために必要。
+- `TEXTURE_BINDING`：シェーダー内でサンプリング用テクスチャとしてバインドできる。
+    - 元記事は「ブラウザがページに表示するために必要」と説明しているが、[MDN の `configure()` の `usage`](https://developer.mozilla.org/en-US/docs/Web/API/GPUCanvasContext/configure#usage) や [WebGPU 仕様の GPUTextureUsage](https://www.w3.org/TR/webgpu/#dom-gputextureusage-texture_binding) では `TEXTURE_BINDING` は「シェーダーでサンプリング用テクスチャとして bind group にバインドできる」用途と定義されている。
+    - キャンバスの表示自体は、 `usage` フラグを（おそらく）見ないので、これを外しても表示される。
+    - `usage` は [仕様の定義](https://www.w3.org/TR/webgpu/#dom-gpucanvasconfiguration-usage) どおり「`getCurrentTexture()` が返すテクスチャの用途」を決めるだけ。
+    - 書き込んだキャンバスを別のシェーダーでサンプリングしたい場合に足す
 - レンダーパスでも描きたい場合は `RENDER_ATTACHMENT` も足す
     - `context.configure` の `usage` を省略したときの既定値は `RENDER_ATTACHMENT`
     - 普通にキャンバスへ描くだけなら、これまでは意識しなくても `RENDER_ATTACHMENT` が付いていた
