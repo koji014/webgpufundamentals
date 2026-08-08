@@ -1,19 +1,23 @@
 import { globSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import glsl from 'vite-plugin-glsl';
 
+const root = fileURLToPath(new URL('src', import.meta.url));
+
 const input = {
-  main: 'index.html',
+  main: `${root}/index.html`,
   ...Object.fromEntries(
-    globSync('*/{demo,threejs}/**/index.html').map((file) => [
+    globSync('*/{demo,threejs}/**/index.html', { cwd: root }).map((file) => [
       file.replace(/\/index\.html$/, '').replaceAll('/', '_'),
-      file,
+      `${root}/${file}`,
     ]),
   ),
 };
 
 export default defineConfig({
+  root,
   appType: 'mpa',
   plugins: [
     tailwindcss(),
@@ -22,6 +26,8 @@ export default defineConfig({
     }),
   ],
   build: {
+    outDir: '../dist',
+    emptyOutDir: true,
     rollupOptions: { input },
   },
 });
