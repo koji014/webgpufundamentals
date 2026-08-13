@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11 centroid — Three.js — マルチサンプリング</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <a
+      href="/"
+      class="fixed left-2 top-2 z-10 rounded-md bg-black/55 px-2.5 py-1 text-sm text-white no-underline hover:bg-black/70"
+      >← 一覧</a
+    >
+    <canvas
+      id="webgl-canvas"
+      class="fixed inset-0 h-dvh w-full [image-rendering:pixelated]"
+    ></canvas>
+    <button
+      type="button"
+      id="toggle-interp"
+      class="fixed right-2 bottom-2 z-10 rounded-md bg-black/55 px-3 py-1 text-sm text-white hover:bg-black/70"
+    >
+      補間モード切替
+    </button>
+    <script type="module" src="./scripts/index.ts"></script>
+  </body>
+</html>
