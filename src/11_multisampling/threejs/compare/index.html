@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>11 compare — Three.js — マルチサンプリング</title>
+    <link rel="stylesheet" href="/style.css">
+  </head>
+  <body>
+    <a
+      href="/"
+      class="fixed left-2 top-2 z-10 rounded-md bg-black/55 px-2.5 py-1 text-sm text-white no-underline hover:bg-black/70"
+      >← 一覧</a
+    >
+    <div class="fixed inset-0 flex">
+      <div class="relative h-full w-1/2 border-r border-white/20">
+        <canvas
+          id="webgl-canvas-none"
+          class="h-full w-full [image-rendering:pixelated]"
+        ></canvas>
+        <span
+          class="absolute bottom-2 left-2 rounded bg-black/55 px-2 py-0.5 text-sm text-white"
+          >MSAA なし（antialias: false）</span
+        >
+      </div>
+      <div class="relative h-full w-1/2">
+        <canvas
+          id="webgl-canvas-msaa"
+          class="h-full w-full [image-rendering:pixelated]"
+        ></canvas>
+        <span
+          class="absolute bottom-2 left-2 rounded bg-black/55 px-2 py-0.5 text-sm text-white"
+          >MSAA あり（antialias: true）</span
+        >
+      </div>
+    </div>
+    <script type="module" src="./scripts/index.ts"></script>
+  </body>
+</html>
