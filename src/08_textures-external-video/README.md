@@ -156,7 +156,7 @@ const texture = device.importExternalTexture({ source: video });
 
 2. **`repeat` が無視される**（クランプされる）
 
-  - 繰り返したい場合、自前で `fract` を用いてテクスチャ座標を折り返す。
+    - 繰り返したい場合、自前で `fract` を用いてテクスチャ座標を折り返す。
 
     ```wgsl
     let color = textureSampleBaseClampToEdge(
