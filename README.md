@@ -14,6 +14,8 @@
 10. [ストレージテクスチャ](./src/10_storage-textures/README.md)
 11. [マルチサンプリング](./src/11_multisampling/README.md)
 12. [透明度とブレンディング](./src/12_transparency/README.md)
+13. [バインドグループレイアウト](./src/13_bind-group-layouts/README.md)
+14. [平行移動](./src/14_translation/README.md)
 
 ## 参考
 - [WebGPUの基礎](https://webgpufundamentals.org/webgpu/lessons/ja/)
