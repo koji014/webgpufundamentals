@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>14 translation — WebGPU — 平行移動</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+    :root {
+      --bg-color: #fff;
+      --line-color-1: #aaa;
+      --line-color-2: #ddd;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #000;
+        --line-color-1: #666;
+        --line-color-2: #333;
+      }
+    }
+    #webgpu-canvas {
+      background-color: var(--bg-color);
+      background-image:
+        linear-gradient(var(--line-color-1) 1.5px, transparent 1.5px),
+        linear-gradient(90deg, var(--line-color-1) 1.5px, transparent 1.5px),
+        linear-gradient(var(--line-color-2) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line-color-2) 1px, transparent 1px);
+      background-position:
+        -1.5px -1.5px,
+        -1.5px -1.5px,
+        -1px -1px,
+        -1px -1px;
+      background-size:
+        100px 100px,
+        100px 100px,
+        10px 10px,
+        10px 10px;
+    }
+    </style>
+  </head>
+  <body>
+    <a
+      href="/"
+      class="fixed left-2 top-2 z-10 rounded-md bg-black/55 px-2.5 py-1 text-sm text-white no-underline hover:bg-black/70"
+      >← 一覧</a
+    >
+    <canvas id="webgpu-canvas" class="fixed inset-0 h-dvh w-full"></canvas>
+    <script type="module" src="./scripts/index.ts"></script>
+  </body>
+</html>
