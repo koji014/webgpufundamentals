@@ -16,6 +16,9 @@
 12. [透明度とブレンディング](./src/12_transparency/README.md)
 13. [バインドグループレイアウト](./src/13_bind-group-layouts/README.md)
 14. [TRS](./src/14_TRS/README.md)
+15. [正射影](./src/15_orthographic-projection/README.md)
+16. [透視投影](./src/16_perspective-projection/README.md)
+17. [カメラ](./src/17_cameras/README.md)
 
 ## 参考
 - [WebGPUの基礎](https://webgpufundamentals.org/webgpu/lessons/ja/)
