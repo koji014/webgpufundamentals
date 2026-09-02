@@ -248,8 +248,8 @@ export class App {
       this.canvas.clientWidth, // right
       this.canvas.clientHeight, // bottom
       0, // top
-      400, // near
-      -400, // far
+      200, // near
+      -200, // far
       this.matrixValue, // dst
     );
     mat4.translate(
