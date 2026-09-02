@@ -8,7 +8,7 @@ https://webgpufundamentals.org/webgpu/lessons/ja/webgpu-orthographic-projection.
 
 ### 01. 平行移動
 
-$$
+```math
 \mathbf{T} =
 \begin{bmatrix}
 1 & 0 & 0 & t_x \\
@@ -16,7 +16,7 @@ $$
 0 & 0 & 1 & t_z \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 translation([tx, ty, tz]) {
@@ -33,7 +33,7 @@ translation([tx, ty, tz]) {
 
 #### （ i ） X軸回転
 
-$$
+```math
 \mathbf{R_x} =
 \begin{bmatrix}
 1 & 0 & 0 & 0 \\
@@ -41,7 +41,7 @@ $$
 0 & s & c & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 rotationX(rad) {
@@ -57,7 +57,7 @@ rotationX(rad) {
 
 #### （ ii ） Y軸回転
 
-$$
+```math
 \mathbf{R_y} =
 \begin{bmatrix}
 c & 0 & s & 0 \\
@@ -65,7 +65,7 @@ c & 0 & s & 0 \\
 -s & 0 & c & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 rotationY(rad) {
@@ -81,7 +81,7 @@ rotationY(rad) {
 
 #### （ iii ） Z軸回転
 
-$$
+```math
 \mathbf{R_z} =
 \begin{bmatrix}
 c & -s & 0 & 0 \\
@@ -89,7 +89,7 @@ s & c & 0 & 0 \\
 0 & 0 & 1 & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 rotationZ(rad) {
@@ -105,7 +105,7 @@ rotationZ(rad) {
 
 ### 03. スケール
 
-$$
+```math
 \mathbf{S} =
 \begin{bmatrix}
 s_x & 0 & 0 & 0 \\
@@ -113,7 +113,7 @@ s_x & 0 & 0 & 0 \\
 0 & 0 & s_z & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 scaling([sx, sy, sz]) {
@@ -137,22 +137,22 @@ let flippedClipSpace = zeroToTwo - 1.0;                  // -1 ~ 1
 let clipSpace        = flippedClipSpace * vec2f(1, -1);  // Y を反転
 ```
 
-$$
-\mathbf{M} = \mathbf{S_f}\mathbf{T}\mathbf{S_c}\mathbf{S_r} \\
-$$
+```math
+\mathbf{M} = \mathbf{S_f}\mathbf{T}\mathbf{S_c}\mathbf{S_r}
+```
 
-$$
+```math
 \mathbf{P_{clip}} = \mathbf{M}\mathbf{P_{pixel}}
-$$
+```
 
-$$
+```math
 \mathbf{M} =
 \begin{bmatrix}
 \dfrac{2}{width} & 0 & -1 \\
 0 & -\dfrac{2}{height} & 1 \\
 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 #### （ ii ） ３次元
 
@@ -169,16 +169,16 @@ let shifted   = scaled + vec3f(-1, -1, 0.5);    // x,y: -1 ~ 1    z: 0 ~ 1
 let clipSpace = shifted * vec3f(1, -1, 1);      // Y を反転
 ```
 
-$$
-\mathbf{M} = \mathbf{S_f}\mathbf{T}\mathbf{S_c}\mathbf{S_r} \\
-$$
+```math
+\mathbf{M} = \mathbf{S_f}\mathbf{T}\mathbf{S_c}\mathbf{S_r}
+```
 
-$$
+```math
 \mathbf{P_{clip}} = \mathbf{M}\mathbf{P_{pixel}}
-$$
+```
 
 
-$$
+```math
 \mathbf{M} =
 \begin{bmatrix}
 1 & 0 & 0 & 0 \\
@@ -204,9 +204,9 @@ $$
 0 & 0 & \frac{1}{depth} & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
-$$
+```math
 =
 \begin{bmatrix}
 1 & 0 & 0 & 0 \\
@@ -226,9 +226,9 @@ $$
 0 & 0 & \frac{0.5}{depth} & 0 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
-$$
+```math
 =
 \begin{bmatrix}
 1 & 0 & 0 & 0 \\
@@ -242,9 +242,9 @@ $$
 0 & 0 & \frac{0.5}{depth} & 0.5 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
-$$
+```math
 =
 \begin{bmatrix}
 \frac{2}{width} & 0 & 0 & -1 \\
@@ -252,7 +252,7 @@ $$
 0 & 0 & \frac{0.5}{depth} & 0.5 \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 projection(width, height, depth) {
@@ -450,16 +450,16 @@ let clipSpace = scaled + vec3f(-1, -1, 0);                          // xy: -1~1 
 ```
 
 
-$$
+```math
 \mathbf{M} = \mathbf{T_c}\,\mathbf{S_c}\,\mathbf{S_r}\,\mathbf{T_o}
-$$
+```
 
-$$
+```math
 \mathbf{P_{clip}} = \mathbf{M}\,\mathbf{P}
-$$
+```
 
 
-$$
+```math
 \mathbf{M} =
 \begin{bmatrix}
 1 & 0 & 0 & -1 \\
@@ -485,10 +485,10 @@ $$
 0 & 0 & 1 & n \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 
-$$
+```math
 =
 \begin{bmatrix}
 1 & 0 & 0 & -1 \\
@@ -508,10 +508,10 @@ $$
 0 & 0 & \frac{1}{n-f} & \frac{n}{n-f} \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 
-$$
+```math
 =
 \begin{bmatrix}
 1 & 0 & 0 & -1 \\
@@ -525,9 +525,9 @@ $$
 0 & 0 & \frac{1}{n-f} & \frac{n}{n-f} \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
-$$
+```math
 =
 \begin{bmatrix}
 \frac{2}{r-l} & 0 & 0 & \frac{r+l}{l-r} \\
@@ -535,7 +535,7 @@ $$
 0 & 0 & \frac{1}{n-f} & \frac{n}{n-f} \\
 0 & 0 & 0 & 1
 \end{bmatrix}
-$$
+```
 
 ```ts
 ortho(left, right, bottom, top, near, far) {
