@@ -79,7 +79,7 @@ vsOut.normal = (uni.world * vec4f(vert.normal, 0)).xyz;     // 法線は M 変�
 
 <img src="docs/images/normal-diff.png" width="960" alt="" />
 
-Y 方向に非一様スケールした場合、接ベクトル $\bm{t}$ と法線ベクトル $\bm{n}$ が直交してない（左）。
+Y 方向に非一様スケールした場合、接ベクトル $\boldsymbol{t}$ と法線ベクトル $\boldsymbol{n}$ が直交してない（左）。
 
 ---
 
