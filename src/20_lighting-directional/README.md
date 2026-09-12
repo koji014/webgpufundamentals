@@ -118,7 +118,7 @@ vsOut.normal = uni.normalMatrix * vert.normal;              // 法線は normalM
 \boldsymbol{n'}^\top (\mathbf{M}\boldsymbol{t}) = 0
 ```
 
-ここで、法線を正しく変換する行列、すなわち `Normal Matrix` を $\mathbf{G}$ と置くと、$\boldsymbol{n'} = \mathbf{G}\boldsymbol{n}$ とかける。
+ここで、法線を正しく変換する行列、すなわち `Normal Matrix` を $\mathbf{G}$ と置く。このとき $\boldsymbol{n'} = \mathbf{G}\boldsymbol{n}$ とかける。
 
 ```math
 (\mathbf{G}\boldsymbol{n})^\top (\mathbf{M}\boldsymbol{t}) = \boldsymbol{n}^\top \mathbf{G}^\top \mathbf{M} \boldsymbol{t} = 0
@@ -136,7 +136,7 @@ vsOut.normal = uni.normalMatrix * vert.normal;              // 法線は normalM
 
 #### （ i ） 回転
 
-回転行列は直交行列（各列が正規直交）なので、$\mathbf{R}\mathbf{R}^\top = \mathbf{I}$、すなわち $\mathbf{R}^{-1} = \mathbf{R}^\top$ が成り立つ。
+回転行列は直交行列（各列が正規直交）なので $\mathbf{R}\mathbf{R}^\top = \mathbf{I}$ が成り立つ。すなわち $\mathbf{R}^{-1} = \mathbf{R}^\top$。
 
 ```math
 \mathbf{R} =
@@ -167,7 +167,7 @@ vsOut.normal = uni.normalMatrix * vert.normal;              // 法線は normalM
 \end{bmatrix}
 ```
 
-回転のみ（$\mathbf{M} = \mathbf{R}$）なら、
+回転のみ $\mathbf{M} = \mathbf{R}$ なら、
 
 ```math
 \mathbf{G} = (\mathbf{M}^{-1})^\top = (\mathbf{R}^\top)^\top = \mathbf{R} = \mathbf{M}
@@ -212,7 +212,7 @@ $\mathbf{M}$ の逆行列は
 
 ここで $\mathbf{R}^{-1} = \mathbf{R}^\top$ の関係性を用いた。
 
-$\mathbf{G} = \tfrac{1}{s}\mathbf{R}$ は、モデル座標変換行列 $\mathbf{M} = s\mathbf{R}$ とは定数倍（$\tfrac{1}{s^2}$ 倍）の違いだけで、回転成分 $\mathbf{R}$ は共通。  
+$\mathbf{G} = \tfrac{1}{s}\mathbf{R}$ は、モデル座標変換行列 $\mathbf{M} = s\mathbf{R}$ とは $\tfrac{1}{s^2}$ 倍の違い（定数倍）だけで、回転成分 $\mathbf{R}$ は共通。  
 定数倍は、フラグメントシェーダで `normalize` すれば結果は変わらない。
 
 破綻するのは非一様スケールのときのみで、それ以外はモデル座標変換行列を用いても問題ない。  
